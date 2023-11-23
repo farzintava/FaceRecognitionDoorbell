@@ -1,0 +1,34 @@
+<!-- FaceRecognitionDoorbell/templates/add_face.html (modifications) -->
+
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Add Known Face</h1>
+    <form action="{{ url_for('add_face') }}" method="post" enctype="multipart/form-data">
+        <div>
+            <label for="name">Name:</label>
+            <input type="text" name="name" required>
+        </div>
+        <div>
+            <label>Method:</label>
+            <input type="radio" name="method" value="upload" checked> Upload Image
+            <input type="radio" name="method" value="webcam"> Use Webcam
+        </div>
+        <div class="image-upload">
+            <label for="image">Face Image:</label>
+            <input type="file" name="image" accept="image/*">
+        </div>
+        <div>
+            <input type="submit" value="Add Face">
+
+        </div>
+    </form>
+    <script>
+        // Show or hide the image upload input based on the selected method
+        document.querySelectorAll('input[name="method"]').forEach(input => {
+            input.addEventListener('change', function() {
+                document.querySelector('.image-upload').style.display = this.value === 'upload' ? 'block' : 'none';
+            });
+        });
+    </script>
+{% endblock %}

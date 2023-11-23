@@ -1,0 +1,23 @@
+<!-- FaceRecognitionDoorbell/templates/logs.html -->
+
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Visitor Logs</h1>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Timestamp</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in logs %}
+            <tr>
+                <td>{{ log.name }}</td>
+                <td>{{ log.timestamp }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

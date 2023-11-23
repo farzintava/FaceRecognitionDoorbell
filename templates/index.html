@@ -1,0 +1,29 @@
+<!-- FaceRecognitionDoorbell/templates/index.html -->
+
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Welcome to Face Recognition Doorbell</h1>
+    <p>
+        <a href="{{ url_for('add_face') }}">Add Known Face</a> |
+        <a href="{{ url_for('logs') }}">View Logs</a> |
+        <a href="{{ url_for('live_feed') }}">Live Feed</a> 
+    </p>
+    <h2>Recent Visitors</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Timestamp</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in logs %}
+            <tr>
+                <td>{{ log.name }}</td>
+                <td>{{ log.timestamp }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
