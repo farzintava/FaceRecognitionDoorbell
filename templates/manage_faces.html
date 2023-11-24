@@ -1,0 +1,15 @@
+<!-- FaceRecognitionDoorbell/templates/manage_faces.html -->
+
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Known Faces</h2>
+<ul>
+    {% for face in known_faces %}
+    <li>
+        {{ face.name }} - <img src="{{ url_for('static', filename='/data/known_faces/'+face.image_path) }}" alt="{{ face.name }}">
+        <a href="{{ url_for('delete_face', face_id=face.id) }}">Delete</a>
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}
