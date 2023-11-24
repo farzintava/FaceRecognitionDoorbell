@@ -4,25 +4,26 @@ import face_recognition
 import os
 import cv2
 import numpy as np
+from models import KnownFace
+from app import app
+
 
 
 KNOWN_FACES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'known_faces')
-KNOWN_FACE_ENCODINGS = []
-KNOWN_FACE_NAMES = []
+
 
 def load_known_faces():
     """
     Load known faces from the data directory and encode them.
     """
-    global KNOWN_FACE_ENCODINGS, KNOWN_FACE_NAMES
+    with app.app_context():
+        known_faces=KnownFace.query.all()
+    known_encodings = [known_face.get_encoding() for known_face in known_faces]
+    known_names = [known_face.name for known_face in known_faces]
+    
+    return known_encodings,known_names
 
-    for file in os.listdir(KNOWN_FACES_DIR):
-        image = face_recognition.load_image_file(os.path.join(KNOWN_FACES_DIR, file))
-        face_encoding = face_recognition.face_encodings(image)[0]
-        KNOWN_FACE_ENCODINGS.append(face_encoding)
-        KNOWN_FACE_NAMES.append(file.split('-')[0])
-
-def recognize_face(image_path):
+def recognize_face(face_encoding,known_faces):
     """
     Recognize a face in the given image.
 
@@ -32,24 +33,20 @@ def recognize_face(image_path):
     Returns:
     - Name of the recognized person or "Unknown".
     """
-    unknown_image = face_recognition.load_image_file(image_path)
-    unknown_face_encodings = face_recognition.face_encodings(unknown_image)
-
-    for face_encoding in unknown_face_encodings:
-        matches = face_recognition.compare_faces(KNOWN_FACE_ENCODINGS, face_encoding)
-        name = "Unknown"
-
-        if True in matches:
-            first_match_index = matches.index(True)
-            name = KNOWN_FACE_NAMES[first_match_index]
-
-        return name
+    
+    for known_face in known_faces:
+        matches = face_recognition.compare_faces([known_face.get_encoding()], np.array(face_encoding))
+        if matches[0]:
+            return known_face.name
+    return "Unknown"
 
 def gen_frames():
     """
     Captures video from the camera and processes each frame for face recognition.
     """
     video_capture = cv2.VideoCapture(0)  # 0 for the default camera
+    
+    known_encodings, known_names = load_known_faces()
     
     face_locations = []
     face_encodings = []
@@ -75,13 +72,13 @@ def gen_frames():
             face_names = []
             for face_encoding in face_encodings:
                 # See if the face is a match for the known face(s)
-                matches = face_recognition.compare_faces(KNOWN_FACE_ENCODINGS, face_encoding)
+                matches = face_recognition.compare_faces(known_encodings, face_encoding)
                 name = "Unknown"
 
                 # # If a match was found in known_face_encodings, just use the first one.
                 if True in matches:
                     first_match_index = matches.index(True)
-                    name = KNOWN_FACE_NAMES[first_match_index]
+                    name = known_names[first_match_index]
 
                 # Or instead, use the known face with the smallest distance to the new face
                 # face_distances = face_recognition.face_distance(KNOWN_FACE_ENCODINGS, face_encoding)
@@ -114,5 +111,4 @@ def gen_frames():
         frame = buffer.tobytes()
         yield (b'--frame\r\n'
                 b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
-    
     video_capture.release()

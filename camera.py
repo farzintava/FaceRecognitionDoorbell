@@ -2,20 +2,20 @@
 import cv2
 import time
 
-class VideoCamera:
-    def __init__(self):
-        # Capture video from the first USB camera device
-        self.video = cv2.VideoCapture(0)
+# class VideoCamera:
+#     def __init__(self):
+#         # Capture video from the first USB camera device
+#         self.video = cv2.VideoCapture(0)
 
-    def __del__(self):
-        self.video.release()
+#     def __del__(self):
+#         self.video.release()
 
-    def get_frame(self):
-        success, image = self.video.read()
-        if success:
-            return cv2.imencode('.jpg', image)[1].tobytes()
-        else:
-            return None
+#     def get_frame(self):
+#         success, image = self.video.read()
+#         if success:
+#             return cv2.imencode('.jpg', image)[1].tobytes()
+#         else:
+#             return None
 
 
 def capture_image(filename):
