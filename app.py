@@ -155,6 +155,43 @@ def capture():
     add_new_log(db,recognized_name)
     return redirect(url_for('index'))
 
+@app.route('/ring', methods=['POST'])
+def trigger_capture():
+    # Call your capture function here
+    print("ringinnnnng")
+    image_path = os.path.join(BASE_DIR, 'static/data', 'captured_image.jpg')
+    capture_image(image_path)
+    
+    
+    detected_faces = face_detection.detect_faces(image_path)
+    if not detected_faces:
+        return None
+    
+    img = cv2.imread(image_path)
+    for (top, right, bottom, left) in detected_faces:
+        face_img = img[top:bottom, left:right]
+        cv2.imwrite(image_path, face_img)
+    
+    
+    face_encoding = face_recognition.face_encodings(img)
+    print(f"face encoding: {type(face_encoding)}")
+    known_faces = KnownFace.query.all()
+    # Recognize the face in the captured image
+    recognized_name = face_rec.recognize_face(face_encoding,known_faces)
+    
+    # Create a log entry
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    if recognized_name != "Unknown":
+        
+        flash(f'Visitor recognized as {recognized_name}!')
+    else:
+        # Save the unknown face image for review
+        unknown_image_path = os.path.join(BASE_DIR, 'static/data', 'unknown_faces', f'unknown_{timestamp}.jpg')
+        os.rename(image_path, unknown_image_path)
+        flash('Visitor could not be recognized!')
+    add_new_log(db,recognized_name)
+    return 'Capture triggered', 200
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0',port=5001)
