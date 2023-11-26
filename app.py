@@ -39,7 +39,8 @@ def index():
     # TODO: Recognize faces and update LOGS accordingly.
     
     logs=Log.query.all()
-    return render_template('index.html', logs=logs)
+    logs.reverse()
+    return render_template('index.html', logs=logs[:10])
 
 # FaceRecognitionDoorbell/app.py
 
@@ -53,7 +54,9 @@ def delete_face(face_id):
     face = KnownFace.query.get_or_404(face_id)
     db.session.delete(face)
     db.session.commit()
-    os.remove(f"static/data/known_faces/{face.image_path}")
+    image_path = os.path.join(BASE_DIR,f"static/data/known_faces/{face.image_path}")
+    os.remove(image_path)
+    
     return redirect(url_for('manage_faces'))
 # FaceRecognitionDoorbell/app.py (modifications to the add_face route)
 
@@ -115,6 +118,7 @@ def video_feed():
 def logs():
     """Show logs of all visitors (recognized and unrecognized)."""
     logs=Log.query.all()
+    logs.reverse()
     return render_template('logs.html', logs=logs)
 
 
@@ -165,7 +169,7 @@ def trigger_capture():
     
     detected_faces = face_detection.detect_faces(image_path)
     if not detected_faces:
-        return None
+        return 'No Face Detected',404
     
     img = cv2.imread(image_path)
     for (top, right, bottom, left) in detected_faces:
@@ -190,7 +194,16 @@ def trigger_capture():
         os.rename(image_path, unknown_image_path)
         flash('Visitor could not be recognized!')
     add_new_log(db,recognized_name)
-    return 'Capture triggered', 200
+    return recognized_name, 200
+
+# FaceRecognitionDoorbell/app.py
+
+@app.route('/get_lcd_message')
+def get_lcd_message():
+    # Logic to determine what message to display
+    message = "Latest capture at: " + str(datetime.now())
+    return jsonify(message=message)
+
 
 
 if __name__ == '__main__':
