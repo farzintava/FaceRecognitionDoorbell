@@ -24,15 +24,6 @@ def load_known_faces():
     return known_encodings,known_names
 
 def recognize_face(face_encoding,known_faces):
-    """
-    Recognize a face in the given image.
-
-    Parameters:
-    - image_path (str): Path to the image file.
-
-    Returns:
-    - Name of the recognized person or "Unknown".
-    """
     
     for known_face in known_faces:
         matches = face_recognition.compare_faces([known_face.get_encoding()], np.array(face_encoding))
